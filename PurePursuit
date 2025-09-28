@@ -1,0 +1,138 @@
+# Pure Pursuit Controller
+
+## 1. Introduction
+Pure pursuit is a geometric path tracking controller.  
+A geometric path tracking controller is any controller that tracks a reference path using only the geometry of the vehicle kinematics and the reference path.
+
+The **Pure Pursuit controller** uses a look-ahead point, which is a fixed distance on the reference path ahead of the vehicle.  
+The vehicle needs to proceed to that point using a steering angle, which we need to compute.
+
+---
+
+## 2. Reference Point
+In this method, the **center of the rear axle** is used as the reference point on the vehicle.
+
+- The target point is selected as the red point on the trajectory.  
+- The distance between the rear axle and the target point is denoted as `ld` (look-ahead distance).  
+- The goal is to steer the vehicle at a correct angle so it proceeds toward the target point.
+
+Let:
+- `α` = angle between the vehicle’s heading and the line joining the rear axle to the look-ahead point  
+- `L` = wheelbase of the vehicle  
+- `R` = instantaneous turning radius
+
+---
+
+## 3. Geometric Relationship
+
+From geometry (law of sines):
+$$
+\[
+\frac{l_d}{\sin 2\alpha} = \frac{R}{\sin(\frac{\pi}{2} - \alpha)}
+\]
+$$
+
+This simplifies to:
+$$
+\[
+\frac{l_d}{2 \sin \alpha \cos \alpha} = \frac{R}{\cos \alpha}
+\]
+
+\[
+\frac{l_d}{\sin \alpha} = 2R
+\]
+$$
+
+So, the radius of the circular path becomes:
+
+$$
+\[
+R = \frac{l_d}{2 \sin \alpha}
+\]
+$$
+---
+
+## 4. Steering Angle Derivation
+
+From the bicycle model:
+
+$$
+\[
+R = \frac{L}{\tan \delta}
+\]
+$$
+
+Where `δ` is the steering angle.
+
+Equating both expressions for `R`:
+
+$$
+\[
+\frac{L}{\tan \delta} = \frac{l_d}{2 \sin \alpha}
+\]
+$$
+
+Thus, the steering angle is:
+
+$$
+\[
+\delta = \arctan \left( \frac{2L \sin \alpha}{l_d} \right)
+\]
+$$
+
+---
+
+## 5. Speed-Dependent Look-Ahead Distance
+
+The basic controller assumes a constant look-ahead distance.  
+However, this can lead to aggressive steering at high speeds.  
+To improve stability, the look-ahead distance is made speed-dependent:
+
+$$
+\[
+l_d = K_{dd} \cdot V_f
+\]
+$$
+
+Where:
+- `Kdd` = tuning parameter  
+- `Vf` = forward velocity of the vehicle  
+
+So the updated steering angle is:
+
+$$
+\[
+\delta = \arctan \left( \frac{2L \sin \alpha}{K_{dd} \cdot V_f} \right)
+\]
+$$
+
+---
+
+## 6. Summary
+
+- Pure pursuit is a **geometric path tracking controller**.  
+- Uses **rear axle as reference point**.  
+- Computes steering angle to reach a **look-ahead point** on the path.  
+- Formula:
+$$
+\[
+\delta = \arctan \left( \frac{2L \sin \alpha}{l_d} \right)
+\]
+
+- At higher speeds, use a **variable look-ahead distance**:
+
+\[
+l_d = K_{dd} \cdot V_f
+\]
+$$
+This makes the controller less aggressive at high speeds.
+
+---
+
+## 7. Limitation
+
+- Ignores **dynamic forces** (no-slip assumption).  
+- Can become unstable if not tuned properly.  
+- Works well for low-to-moderate speed tracking tasks.
+
+---
